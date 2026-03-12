@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
+    
+    body { background-color: #f0f2f5; font-family: 'Sarabun', sans-serif; color: #333; }
+    .page-section { display: none; }
+    .page-section.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .table-container { 
+      background: white; 
+      padding: 20px; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    }
+    
+    .table-scroll-wrapper {
+      max-height: 70vh; 
+      overflow-y: auto;
+      overflow-x: auto;
+      border-radius: 6px;
+      border: 1px solid #dee2e6;
+    }
+
+    .table-compact {
+      font-size: 13px;
+      width: 100%;
+      margin-bottom: 0;
+      table-layout: fixed;
+      border-collapse: separate; 
+      border-spacing: 0;
+    }
+
+    .table-compact th, .table-compact td {
+      border-right: 1px solid #dee2e6;
+      border-bottom: 1px solid #dee2e6;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+      padding: 6px 8px;
+    }
+
+    /* หน้า 1: ตรึงหัวตารางและกำหนดความกว้าง */
+    #monthlyTable thead tr:nth-child(1) th {
+      position: sticky; top: 0; background-color: #0d6efd !important; color: white !important; z-index: 11; height: 40px; text-align: center; border-top: 1px solid #dee2e6;
+    }
+    #monthlyTable thead tr:nth-child(2) th {
+      position: sticky; top: 40px; background-color: #0b5ed7 !important; color: white !important; z-index: 10; height: 40px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #monthlyTable th:nth-child(1), #monthlyTable td:nth-child(1),
+    #monthlyTable th:nth-child(2), #monthlyTable td:nth-child(2) {
+      width: 130px; min-width: 130px; max-width: 130px; text-align: left;
+    }
+    #monthlyTable th:nth-child(n+3), #monthlyTable td:nth-child(n+3) {
+      width: 45px; min-width: 45px; max-width: 45px; text-align: center;
+    }
+
+    /* หน้า 2: ตรึงหัวตารางและให้อ่านในมือถือได้ */
+    #dailyHead th {
+      position: sticky; top: 0; background-color: #0d6efd !important; color: white !important; z-index: 10; height: 40px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-top: 1px solid #dee2e6;
+    }
+    #page2 .table-compact th, #page2 .table-compact td {
+      white-space: normal; word-wrap: break-word; min-width: 100px;
+    }
+
+    .nav-pills .nav-link { border-radius: 50px; font-weight: 500; margin: 0 5px; }
+  </style>
+</head>
+<body>
+  <div class="container mt-4 mb-4">
+    <h3 class="mb-4 text-center text-primary fw-bold">📅 ตารางปฏิบัติงานเจ้าหน้าที่โรงพยาบาลไทรโยค</h3>
+    
+    <ul class="nav nav-pills mb-4 justify-content-center" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active shadow-sm" onclick="showPage('page1')" type="button">📌 ตารางเวรประจำเดือน</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link shadow-sm" onclick="showPage('page2')" type="button">📝 ข้อมูลรายวัน</button>
+      </li>
+    </ul>
+
+    <div id="page1" class="page-section active table-container">
+      <div class="row align-items-end mb-3">
+        <div class="col-md-4 col-sm-6 mb-2">
+          <label class="form-label fw-bold text-muted mb-1">เลือกเดือน:</label>
+          <select id="monthSelect" class="form-select shadow-sm" onchange="loadMonthlyData()">
+            <option value="">กำลังโหลดรายการ...</option>
+          </select>
+        </div>
+        <div class="col-md-4 col-sm-6 mb-2 ms-auto">
+          <input type="text" id="searchPage1" class="form-control shadow-sm" placeholder="🔍 ค้นหาชื่อ..." onkeyup="filterTable('monthlyBody', this.value)">
+        </div>
+      </div>
+      <div class="table-scroll-wrapper">
+        <table class="table table-hover table-compact" id="monthlyTable">
+          <thead id="monthlyHead"></thead>
+          <tbody id="monthlyBody">
+            <tr><td class="text-center text-muted py-4">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="page2" class="page-section table-container">
+      <div class="row align-items-end mb-3">
+        <div class="col-md-4 col-sm-12 mb-2">
+          <label class="form-label fw-bold text-muted mb-1">เลือกวันที่</label>
+          <input type="date" id="dateInput" class="form-control shadow-sm" onchange="loadDailyData()">
+        </div>
+        <div class="col-md-4 col-sm-12 mb-2 ms-auto">
+          <input type="text" id="searchPage2" class="form-control shadow-sm" placeholder="🔍 ค้นหาข้อมูล..." onkeyup="filterTable('dailyBody', this.value)">
+        </div>
+      </div>
+      <div class="table-scroll-wrapper">
+        <table class="table table-hover table-compact">
+          <thead id="dailyHead"></thead>
+          <tbody id="dailyBody">
+            <tr><td colspan="3" class="text-center text-muted py-4">กำลังโหลดข้อมูลรายวัน...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    <script>
+    // ⚠️ นำ Web App URL ที่ได้จาก Google Apps Script มาวางที่นี่
+    const API_URL = "https://script.google.com/macros/s/AKfycbzvlUo3RsSR2kjl8p4wuZGym_rWbtgE_n02ZAxVp4BwOa_wzrsh9a30-kM8KWPPz63X/exec"; 
+
+    // --- ฟังก์ชันกลางสำหรับสื่อสารกับ Backend ---
+    async function callBackend(action, payload = null) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          // ใช้ text/plain ป้องกันปัญหา CORS Preflight ของ Google
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: action, payload: payload })
+        });
+        const res = await response.json();
+        if (res.status === 'success') {
+          return res.data;
+        } else {
+          throw new Error(res.message);
+        }
+      } catch (error) {
+        console.error("API Error:", error);
+        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง");
+        throw error;
+      }
+    }
+
+    // --- การเปลี่ยนหน้า ---
+    function showPage(pageId) {
+      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active')); // [cite: 41]
+      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active')); // [cite: 41]
+      document.getElementById(pageId).classList.add('active'); // [cite: 41]
+      event.target.classList.add('active'); // [cite: 41]
+      document.getElementById('searchPage1').value = ''; // [cite: 41]
+      document.getElementById('searchPage2').value = ''; // [cite: 42]
+      filterTable('monthlyBody', ''); // [cite: 42]
+      filterTable('dailyBody', ''); // [cite: 42]
+    }
+
+    function filterTable(tbodyId, keyword) {
+      const filter = keyword.toLowerCase(); // [cite: 42]
+      const rows = document.getElementById(tbodyId).getElementsByTagName('tr'); // [cite: 43]
+      for (let i = 0; i < rows.length; i++) { // [cite: 43]
+        if (rows[i].cells.length === 1 && rows[i].cells[0].colSpan > 1) continue; // [cite: 43]
+        let text = rows[i].textContent.toLowerCase(); // [cite: 44]
+        rows[i].style.display = text.includes(filter) ? '' : 'none'; // [cite: 44]
+      } // [cite: 45]
+    }
+
+    // --- ทำงานทันทีเมื่อโหลดหน้าเว็บเสร็จ ---
+    window.onload = async function() {
+      // 1. ตั้งค่าวันที่ปัจจุบัน
+      const today = new Date(); // [cite: 45]
+      const yyyy = today.getFullYear(); // [cite: 46]
+      const mm = String(today.getMonth() + 1).padStart(2, '0'); // [cite: 46]
+      const dd = String(today.getDate()).padStart(2, '0'); // [cite: 46]
+      document.getElementById('dateInput').value = `${yyyy}-${mm}-${dd}`; // [cite: 46]
+      
+      // โหลดข้อมูลรายวัน
+      loadDailyData(); // [cite: 47]
+
+      // 2. ดึงชื่อชีตผ่าน API
+      try {
+        const sheets = await callBackend('getSheetNames');
+        populateMonthSelect(sheets);
+      } catch (e) {
+        document.getElementById('monthlyBody').innerHTML = '<tr><td class="text-center text-danger py-4">โหลดข้อมูลผิดพลาด</td></tr>';
+      }
+    };
+
+    function populateMonthSelect(sheets) {
+      const select = document.getElementById('monthSelect'); // [cite: 48]
+      select.innerHTML = '<option value="">-- กรุณาเลือกเดือน --</option>'; // [cite: 48]
+      const today = new Date(); // [cite: 49]
+      const currentMonth = today.getMonth() + 1; // [cite: 49]
+      const currentYearBuddh = today.getFullYear() + 543; // [cite: 50]
+      const targetSheetName = `${currentMonth}-${currentYearBuddh}`; // [cite: 50]
+      let foundCurrentMonth = false; // [cite: 51]
+
+      sheets.forEach(sheet => {
+        let opt = document.createElement('option');
+        opt.value = sheet.id; 
+        opt.textContent = sheet.display;
+        if (sheet.id === targetSheetName) {
+          opt.selected = true;
+          foundCurrentMonth = true;
+        }
+        select.appendChild(opt); // [cite: 52]
+      });
+
+      if (foundCurrentMonth) { // [cite: 53]
+        loadMonthlyData(); // [cite: 53]
+      } else {
+        document.getElementById('monthlyBody').innerHTML = '<tr><td class="text-center text-muted py-4">กรุณาเลือกเดือนเพื่อดูข้อมูล</td></tr>'; // [cite: 54]
+      } // [cite: 55]
+    }
+
+    // --- การดึงข้อมูลรายเดือน ---
+    async function loadMonthlyData() {
+      const sheetName = document.getElementById('monthSelect').value; // [cite: 55]
+      if (!sheetName) return; // [cite: 56]
+      
+      document.getElementById('monthlyHead').innerHTML = ''; // [cite: 56]
+      document.getElementById('monthlyBody').innerHTML = '<tr><td class="text-center text-primary py-4">กำลังโหลดข้อมูล...</td></tr>'; // [cite: 56]
+      document.getElementById('searchPage1').value = ''; // [cite: 56]
+      
+      try {
+        const data = await callBackend('getMonthlyData', sheetName);
+        displayMonthlyData(data);
+      } catch (e) {
+        document.getElementById('monthlyBody').innerHTML = '<tr><td class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลด</td></tr>';
+      }
+    }
+
+    function displayMonthlyData(data) {
+      const thead = document.getElementById('monthlyHead'); // [cite: 57]
+      const tbody = document.getElementById('monthlyBody'); // [cite: 57]
+      thead.innerHTML = ''; tbody.innerHTML = ''; // [cite: 58]
+      
+      if (data.length < 2) {
+        tbody.innerHTML = '<tr><td class="text-center text-danger py-4">ไม่พบข้อมูลในเดือนนี้</td></tr>'; // [cite: 58]
+        return; // [cite: 59]
+      }
+      
+      let headerRow1 = document.createElement('tr'); // [cite: 59]
+      data[0].forEach(cell => { // [cite: 60]
+        let th = document.createElement('th');
+        let text = String(cell).replace(/\^/g, '').trim();
+        th.textContent = text; th.title = text;
+        headerRow1.appendChild(th);
+      });
+      thead.appendChild(headerRow1); // [cite: 61]
+
+      let headerRow2 = document.createElement('tr');
+      data[1].forEach(cell => {
+        let th = document.createElement('th');
+        let text = String(cell).replace(/\^/g, '').trim();
+        th.textContent = text; th.title = text;
+        headerRow2.appendChild(th);
+      });
+      thead.appendChild(headerRow2); // [cite: 62]
+
+      let isGray = false; 
+      for (let i = 2; i < data.length; i++) {
+        let row = data[i]; // [cite: 62]
+        let hasCaret = row.some(cell => String(cell).includes('^')); // [cite: 63]
+        if (hasCaret) isGray = !isGray; // [cite: 63]
+        
+        let tr = document.createElement('tr'); // [cite: 64]
+        tr.style.backgroundColor = isGray ? '#eaeaea' : '#ffffff'; // [cite: 65]
+        if (hasCaret) { tr.style.fontWeight = 'bold'; tr.style.color = '#0d6efd'; } // [cite: 65]
+
+        row.forEach(cell => {
+          let text = String(cell).replace(/\^/g, '').trim(); 
+          let td = document.createElement('td');
+          td.textContent = text; td.title = text; 
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr); // [cite: 67]
+      }
+    }
+
+    // --- การดึงข้อมูลรายวัน ---
+    async function loadDailyData() {
+      const dateStr = document.getElementById('dateInput').value; // [cite: 67]
+      if (!dateStr) return; // [cite: 68]
+      
+      document.getElementById('dailyHead').innerHTML = ''; // [cite: 68]
+      document.getElementById('dailyBody').innerHTML = '<tr><td colspan="3" class="text-center text-primary py-4">กำลังอัปเดต Sheet และโหลดข้อมูล...</td></tr>'; // [cite: 68]
+      document.getElementById('searchPage2').value = ''; // [cite: 68]
+      
+      try {
+        const data = await callBackend('updateAndGetDailyData', dateStr);
+        displayDailyData(data);
+      } catch (e) {
+        document.getElementById('dailyBody').innerHTML = '<tr><td colspan="3" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลด</td></tr>';
+      }
+    }
+
+    function displayDailyData(data) {
+      const thead = document.getElementById('dailyHead'); // [cite: 69]
+      const tbody = document.getElementById('dailyBody'); // [cite: 69]
+      thead.innerHTML = ''; tbody.innerHTML = ''; // [cite: 70]
+      
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-4">ไม่พบข้อมูล</td></tr>'; // [cite: 70]
+        return; // [cite: 71]
+      }
+      
+      let headerRow = document.createElement('tr'); // [cite: 71]
+      data[0].forEach(cell => { // [cite: 72]
+        let th = document.createElement('th');
+        th.textContent = String(cell).replace(/\^/g, '').trim();
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow); // [cite: 73]
+      
+      let isGray = false;
+      for (let i = 1; i < data.length; i++) {
+        let row = data[i]; // [cite: 73]
+        let hasCaret = row.some(cell => String(cell).includes('^')); // [cite: 74]
+        if (hasCaret) isGray = !isGray; // [cite: 74]
+
+        let tr = document.createElement('tr'); // [cite: 75]
+        tr.style.backgroundColor = isGray ? '#eaeaea' : '#ffffff'; // [cite: 75]
+        if (hasCaret) { tr.style.fontWeight = 'bold'; tr.style.color = '#0d6efd'; } // [cite: 76]
+
+        row.forEach(cell => {
+          let text = String(cell).replace(/\^/g, '').trim();
+          let td = document.createElement('td');
+          td.textContent = text;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr); // [cite: 77]
+      }
+    }
+  </script>
+  </script>
+</body>
+</html>
