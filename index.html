@@ -3,141 +3,585 @@
 <head>
   <base target="_top">
   <meta charset="UTF-8">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบตารางปฏิบัติงานเจ้าหน้าที่ - โรงพยาบาลไทรโยค</title>
+  
+  <!-- Fonts: Prompt & Sarabun for Modern Clean Thai Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5 & Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
-    
-    body { background-color: #f0f2f5; font-family: 'Sarabun', sans-serif; color: #333; }
-    .page-section { display: none; }
-    .page-section.active { display: block; animation: fadeIn 0.4s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
-    .table-container { 
-      background: white; 
-      padding: 20px; 
-      border-radius: 12px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-    }
-    
-    .table-scroll-wrapper {
-      max-height: 70vh; 
-      overflow-y: auto;
-      overflow-x: auto;
-      border-radius: 6px;
-      border: 1px solid #dee2e6;
+    :root {
+      --primary-color: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --accent-color: #0d9488;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --header-bg: #0f172a;
+      --col1-width: 140px;
+      --col2-width: 140px;
     }
 
-    .table-compact {
-      font-size: 13px;
+    body {
+      background-color: var(--bg-color);
+      font-family: 'Sarabun', sans-serif;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1, h2, h3, h4, h5, h6, .brand-title, .nav-pills .nav-link {
+      font-family: 'Prompt', sans-serif;
+    }
+
+    /* Top App Bar */
+    .app-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0284c7 100%);
+      color: #ffffff;
+      padding: 1.25rem 0;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.25);
+      position: relative;
+    }
+
+    .app-header .badge-status {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 50rem;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.825rem;
+    }
+
+    /* Navigation Pills */
+    .nav-tabs-wrapper {
+      background: #ffffff;
+      border-radius: 1rem;
+      padding: 0.4rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      display: inline-flex;
+      border: 1px solid var(--border-color);
+    }
+
+    .nav-pills .nav-link {
+      border-radius: 0.75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 0.6rem 1.35rem;
+      transition: all 0.2s ease-in-out;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-pills .nav-link:hover {
+      color: var(--primary-color);
+      background-color: var(--primary-light);
+    }
+
+    .nav-pills .nav-link.active {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    }
+
+    /* Main Container Card */
+    .table-container {
+      background: var(--card-bg);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--border-color);
+      transition: transform 0.2s ease;
+    }
+
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+      animation: fadeInSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeInSlide {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Controls Bar */
+    .filter-card {
+      background: #f8fafc;
+      border-radius: 0.875rem;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.25rem;
+    }
+
+    .form-control, .form-select {
+      border-radius: 0.625rem;
+      border: 1.5px solid #cbd5e1;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.925rem;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
+    }
+
+    .btn-quick-action {
+      border-radius: 0.625rem;
+      font-weight: 500;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    /* Modern Table Scroll & Sticky Architecture */
+    .table-scroll-wrapper {
+      max-height: 68vh;
+      overflow: auto;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+      background: #ffffff;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+      position: relative;
+    }
+
+    .table-custom {
+      font-size: 13.5px;
       width: 100%;
       margin-bottom: 0;
-      table-layout: fixed;
-      border-collapse: separate; 
+      border-collapse: separate;
       border-spacing: 0;
     }
 
-    .table-compact th, .table-compact td {
-      border-right: 1px solid #dee2e6;
-      border-bottom: 1px solid #dee2e6;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .table-custom th, .table-custom td {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 7px 8px;
       vertical-align: middle;
-      padding: 6px 8px;
+      white-space: nowrap;
     }
 
-    /* หน้า 1: ตรึงหัวตารางและกำหนดความกว้าง */
+    /* Monthly Table Sticky Headers & Sticky Columns */
     #monthlyTable thead tr:nth-child(1) th {
-      position: sticky; top: 0; background-color: #0d6efd !important; color: white !important; z-index: 11; height: 40px; text-align: center; border-top: 1px solid #dee2e6;
+      position: sticky;
+      top: 0;
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      z-index: 20;
+      height: 38px;
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: 0.3px;
     }
+
     #monthlyTable thead tr:nth-child(2) th {
-      position: sticky; top: 40px; background-color: #0b5ed7 !important; color: white !important; z-index: 10; height: 40px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 38px;
+      background-color: #1e293b !important;
+      color: #e2e8f0 !important;
+      z-index: 19;
+      height: 36px;
+      text-align: center;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
-    #monthlyTable th:nth-child(1), #monthlyTable td:nth-child(1),
+
+    /* Sticky first two columns (No. & Name) */
+    #monthlyTable th:nth-child(1), #monthlyTable td:nth-child(1) {
+      position: sticky;
+      left: 0;
+      width: var(--col1-width);
+      min-width: var(--col1-width);
+      max-width: var(--col1-width);
+      z-index: 10;
+      background-color: #ffffff;
+      text-align: left;
+      font-weight: 500;
+      border-right: 2px solid #cbd5e1;
+    }
+
     #monthlyTable th:nth-child(2), #monthlyTable td:nth-child(2) {
-      width: 130px; min-width: 130px; max-width: 130px; text-align: left;
+      position: sticky;
+      left: var(--col1-width);
+      width: var(--col2-width);
+      min-width: var(--col2-width);
+      max-width: var(--col2-width);
+      z-index: 10;
+      background-color: #ffffff;
+      text-align: left;
+      border-right: 2px solid #94a3b8;
     }
+
+    /* Intersections of Sticky Head and Sticky Columns get highest z-index */
+    #monthlyTable thead tr:nth-child(1) th:nth-child(1),
+    #monthlyTable thead tr:nth-child(1) th:nth-child(2) {
+      z-index: 30;
+      background-color: #0f172a !important;
+    }
+
+    #monthlyTable thead tr:nth-child(2) th:nth-child(1),
+    #monthlyTable thead tr:nth-child(2) th:nth-child(2) {
+      z-index: 29;
+      background-color: #1e293b !important;
+    }
+
+    /* Date columns styling */
     #monthlyTable th:nth-child(n+3), #monthlyTable td:nth-child(n+3) {
-      width: 45px; min-width: 45px; max-width: 45px; text-align: center;
+      width: 44px;
+      min-width: 44px;
+      max-width: 44px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      padding: 6px 2px;
     }
 
-    /* หน้า 2: ตรึงหัวตารางและให้อ่านในมือถือได้ */
+    /* Alternate Row Banding */
+    .row-group-alt {
+      background-color: #f8fafc !important;
+    }
+    .row-group-alt td:nth-child(1),
+    .row-group-alt td:nth-child(2) {
+      background-color: #f8fafc !important;
+    }
+
+    /* Section Category Header inside Table */
+    .row-section-header td {
+      background: linear-gradient(90deg, #e0f2fe 0%, #f0fdf4 100%) !important;
+      color: #0369a1 !important;
+      font-weight: 700;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      border-top: 2px solid #bae6fd;
+      border-bottom: 2px solid #bae6fd;
+    }
+
+    /* Shift Badge Appearance */
+    .shift-val {
+      display: inline-block;
+      min-width: 24px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 12.5px;
+    }
+    .shift-d { background-color: #fef3c7; color: #92400e; } /* ดึก / นอกเวลา */
+    .shift-c { background-color: #e0e7ff; color: #3730a3; } /* เช้า */
+    .shift-b { background-color: #ffedd5; color: #9a3412; } /* บ่าย */
+    .shift-off { color: #94a3b8; }
+
+    /* Weekend Column Highlight */
+    .col-weekend {
+      background-color: #fff1f2 !important;
+    }
+    th.col-weekend {
+      background-color: #be123c !important;
+      color: #fff !important;
+    }
+
+    /* Today Column Highlight */
+    .col-today {
+      background-color: #fef08a !important;
+      font-weight: 700;
+    }
+
+    /* Hover Rows */
+    #monthlyTable tbody tr:hover td {
+      background-color: #e2e8f0 !important;
+      transition: background-color 0.15s;
+    }
+
+    /* Daily Table Styles */
     #dailyHead th {
-      position: sticky; top: 0; background-color: #0d6efd !important; color: white !important; z-index: 10; height: 40px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-top: 1px solid #dee2e6;
-    }
-    #page2 .table-compact th, #page2 .table-compact td {
-      white-space: normal; word-wrap: break-word; min-width: 100px;
+      position: sticky;
+      top: 0;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      color: white !important;
+      z-index: 15;
+      height: 42px;
+      text-align: center;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border: none;
     }
 
-    .nav-pills .nav-link { border-radius: 50px; font-weight: 500; margin: 0 5px; }
+    #dailyTable td {
+      white-space: normal;
+      word-wrap: break-word;
+      padding: 10px 14px;
+    }
+
+    #dailyTable tbody tr:hover td {
+      background-color: #f1f5f9;
+    }
+
+    /* Empty and Loading State Cards */
+    .state-container {
+      padding: 3.5rem 1.5rem;
+      text-align: center;
+    }
+
+    .spinner-custom {
+      width: 2.8rem;
+      height: 2.8rem;
+      border-width: 0.25em;
+      color: var(--primary-color);
+    }
+
+    /* Print Optimization */
+    @media print {
+      body {
+        background: #ffffff;
+      }
+      .app-header, .nav-tabs-wrapper, .filter-card, .btn, .no-print {
+        display: none !important;
+      }
+      .table-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      .table-scroll-wrapper {
+        max-height: none !important;
+        overflow: visible !important;
+        border: none !important;
+      }
+      #monthlyTable th, #monthlyTable td {
+        position: static !important;
+        font-size: 10px !important;
+        padding: 2px !important;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container mt-4 mb-4">
-    <h3 class="mb-4 text-center text-primary fw-bold">📅 ตารางปฏิบัติงานเจ้าหน้าที่โรงพยาบาลไทรโยค</h3>
-    
-    <ul class="nav nav-pills mb-4 justify-content-center" role="tablist">
-      <li class="nav-item">
-        <button class="nav-link active shadow-sm" onclick="showPage('page1')" type="button">📌 ตารางเวรประจำเดือน</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link shadow-sm" onclick="showPage('page2')" type="button">📝 ข้อมูลรายวัน</button>
-      </li>
-    </ul>
 
-    <div id="page1" class="page-section active table-container">
-      <div class="row align-items-end mb-3">
-        <div class="col-md-4 col-sm-6 mb-2">
-          <label class="form-label fw-bold text-muted mb-1">เลือกเดือน:</label>
-          <select id="monthSelect" class="form-select shadow-sm" onchange="loadMonthlyData()">
-            <option value="">กำลังโหลดรายการ...</option>
-          </select>
+  <!-- Header Banner -->
+  <header class="app-header">
+    <div class="container-fluid px-md-4">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-white rounded-circle p-2 text-primary shadow-sm d-flex align-items-center justify-content-center" style="width: 46px; height: 46px;">
+            <i class="bi bi-hospital fs-4 text-primary"></i>
+          </div>
+          <div>
+            <h4 class="mb-0 fw-bold tracking-tight">ระบบตารางปฏิบัติงานเจ้าหน้าที่</h4>
+            <span class="text-white-50 small">โรงพยาบาลไทรโยค จังหวัดกาญจนบุรี</span>
+          </div>
         </div>
-        <div class="col-md-4 col-sm-6 mb-2 ms-auto">
-          <input type="text" id="searchPage1" class="form-control shadow-sm" placeholder="🔍 ค้นหาชื่อ..." onkeyup="filterTable('monthlyBody', this.value)">
+        
+        <div class="d-flex align-items-center gap-2">
+          <div class="badge-status d-none d-md-flex align-items-center gap-2">
+            <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;"></span>
+            <span id="currentClock">กำลังเทียบเวลา...</span>
+          </div>
+          <button class="btn btn-sm btn-outline-light rounded-pill no-print" onclick="window.print()" title="พิมพ์ตารางงาน">
+            <i class="bi bi-printer me-1"></i> พิมพ์
+          </button>
         </div>
       </div>
+    </div>
+  </header>
+
+  <!-- Main Content Body -->
+  <main class="container-fluid px-md-4 py-4 flex-grow-1">
+    <!-- View Switcher Tabs -->
+    <div class="text-center mb-4 no-print">
+      <div class="nav-tabs-wrapper">
+        <ul class="nav nav-pills" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link active" onclick="showPage('page1', this)" type="button">
+              <i class="bi bi-calendar3"></i> ตารางเวรประจำเดือน
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" onclick="showPage('page2', this)" type="button">
+              <i class="bi bi-calendar2-day"></i> ข้อมูลเวรรายวัน
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== หน้าที่ 1: ตารางเวรประจำเดือน ==================== -->
+    <div id="page1" class="page-section active table-container">
+      <!-- Controls Toolbar -->
+      <div class="filter-card no-print">
+        <div class="row g-3 align-items-center">
+          <div class="col-lg-3 col-md-5">
+            <label class="form-label small fw-semibold text-muted mb-1">
+              <i class="bi bi-calendar-month me-1 text-primary"></i> เลือกเดือนที่ต้องการดู:
+            </label>
+            <div class="input-group">
+              <select id="monthSelect" class="form-select" onchange="loadMonthlyData()">
+                <option value="">⏳ กำลังเชื่อมต่อข้อมูล...</option>
+              </select>
+              <button class="btn btn-outline-secondary" type="button" onclick="refreshMonthList()" title="โหลดรายการเดือนใหม่">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-7 ms-auto">
+            <label class="form-label small fw-semibold text-muted mb-1">
+              <i class="bi bi-search me-1 text-primary"></i> ค้นหาชื่อเจ้าหน้าที่ / ตำแหน่ง:
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+              <input type="text" id="searchPage1" class="form-control border-start-0" placeholder="พิมพ์ชื่อหรือนามสกุล..." onkeyup="filterTable('monthlyBody', this.value, 'countMonthly')">
+              <button class="btn btn-outline-secondary border-start-0" type="button" onclick="clearSearch('searchPage1', 'monthlyBody', 'countMonthly')" title="ล้างคำค้น">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="col-12 d-flex justify-content-between align-items-center pt-1">
+            <div class="small text-muted">
+              <span id="countMonthly" class="badge bg-light text-secondary border">แสดงข้อมูลทั้งหมด</span>
+              <span class="ms-2 d-none d-md-inline-block text-secondary">
+                <i class="bi bi-info-circle"></i> เลื่อนซ้าย-ขวา เพื่อดูวันที่เพิ่มเติม (คอลัมน์ชื่อจะถูกตรึงไว้เสมอ)
+              </span>
+            </div>
+            <div class="d-flex align-items-center gap-2 small text-muted">
+              <span class="d-flex align-items-center gap-1"><span class="badge rounded-circle bg-danger" style="width: 8px; height: 8px;"></span> วันหยุด</span>
+              <span class="d-flex align-items-center gap-1 ms-2"><span class="badge rounded-circle bg-warning" style="width: 8px; height: 8px;"></span> วันนี้</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Section -->
       <div class="table-scroll-wrapper">
-        <table class="table table-hover table-compact" id="monthlyTable">
+        <table class="table-custom" id="monthlyTable">
           <thead id="monthlyHead"></thead>
           <tbody id="monthlyBody">
-            <tr><td class="text-center text-muted py-4">กำลังโหลดข้อมูล...</td></tr>
+            <tr>
+              <td class="state-container">
+                <div class="spinner-border spinner-custom mb-3" role="status"></div>
+                <div class="text-secondary fw-semibold">กำลังโหลดข้อมูลตารางเวร...</div>
+                <small class="text-muted">กรุณารอสักครู่ กำลังติดต่อกับ Google Sheet</small>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
     </div>
 
+    <!-- ==================== หน้าที่ 2: ข้อมูลรายวัน ==================== -->
     <div id="page2" class="page-section table-container">
-      <div class="row align-items-end mb-3">
-        <div class="col-md-4 col-sm-12 mb-2">
-          <label class="form-label fw-bold text-muted mb-1">เลือกวันที่</label>
-          <input type="date" id="dateInput" class="form-control shadow-sm" onchange="loadDailyData()">
-        </div>
-        <div class="col-md-4 col-sm-12 mb-2 ms-auto">
-          <input type="text" id="searchPage2" class="form-control shadow-sm" placeholder="🔍 ค้นหาข้อมูล..." onkeyup="filterTable('dailyBody', this.value)">
+      <!-- Controls Toolbar -->
+      <div class="filter-card no-print">
+        <div class="row g-3 align-items-center">
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label small fw-semibold text-muted mb-1">
+              <i class="bi bi-calendar-event me-1 text-primary"></i> เลือกวันที่ต้องการตรวจสอบ:
+            </label>
+            <div class="input-group">
+              <button class="btn btn-outline-secondary" type="button" onclick="shiftDate(-1)" title="วันก่อนหน้า">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <input type="date" id="dateInput" class="form-control text-center fw-bold" onchange="loadDailyData()">
+              <button class="btn btn-outline-secondary" type="button" onclick="shiftDate(1)" title="วันถัดไป">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+              <button class="btn btn-primary" type="button" onclick="setDateToToday()" title="ไปที่วันนี้">
+                วันนี้
+              </button>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6 ms-auto">
+            <label class="form-label small fw-semibold text-muted mb-1">
+              <i class="bi bi-search me-1 text-primary"></i> กรองผลลัพธ์:
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+              <input type="text" id="searchPage2" class="form-control border-start-0" placeholder="พิมพ์ชื่อ, หน้าที่ หรือเวร..." onkeyup="filterTable('dailyBody', this.value, 'countDaily')">
+              <button class="btn btn-outline-secondary border-start-0" type="button" onclick="clearSearch('searchPage2', 'dailyBody', 'countDaily')" title="ล้างคำค้น">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="col-12 pt-1">
+            <span id="countDaily" class="badge bg-light text-secondary border">แสดงข้อมูลทั้งหมด</span>
+          </div>
         </div>
       </div>
+
+      <!-- Table Section -->
       <div class="table-scroll-wrapper">
-        <table class="table table-hover table-compact">
+        <table class="table-custom" id="dailyTable" style="width: 100%;">
           <thead id="dailyHead"></thead>
           <tbody id="dailyBody">
-            <tr><td colspan="3" class="text-center text-muted py-4">กำลังโหลดข้อมูลรายวัน...</td></tr>
+            <tr>
+              <td colspan="3" class="state-container">
+                <div class="spinner-border spinner-custom mb-3" role="status"></div>
+                <div class="text-secondary fw-semibold">กำลังเชื่อมต่อข้อมูลรายวัน...</div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
     </div>
-  </div>
+  </main>
+
+  <footer class="mt-auto py-3 text-center text-muted small border-top bg-white no-print">
+    <span>© โรงพยาบาลไทรโยค • ระบบตรวจสอบตารางปฏิบัติงานแพทย์และเจ้าหน้าที่</span>
+  </footer>
 
   <script>
-    // ⚠️ นำ Web App URL ที่ได้จาก Google Apps Script มาวางที่นี่
-    const API_URL = "https://script.google.com/macros/s/AKfycbwaacjibHRsvis04QQik0vq3AtTcdmyAtB6F6Ew3XAE5mMuOUqdfwIgk-bgja2s_n0e/exec"; 
+    // ⚠️ Web App URL จาก Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbx6I3JH2gd_p8zUVyHX-B5ax4irLP0QWKU2bUCjNT8_rK25l0c7NxnbynHRyVu_iJZ_/exec"; 
 
-    // --- ฟังก์ชันกลางสำหรับสื่อสารกับ Backend ---
+    // แสดงนาฬิกา Realtime
+    function updateClock() {
+      const now = new Date();
+      const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      };
+      const clockEl = document.getElementById('currentClock');
+      if (clockEl) {
+        clockEl.textContent = now.toLocaleDateString('th-TH', options);
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // --- ฟังก์ชันสื่อสารกับ Google Apps Script API ---
     async function callBackend(action, payload = null) {
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          // ใช้ text/plain ป้องกันปัญหา CORS Preflight ของ Google
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: action, payload: payload })
         });
@@ -145,66 +589,138 @@
         if (res.status === 'success') {
           return res.data;
         } else {
-          throw new Error(res.message);
+          throw new Error(res.message || 'ไม่สามารถรับข้อมูลจากเซิร์ฟเวอร์ได้');
         }
       } catch (error) {
         console.error("API Error:", error);
-        alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง");
         throw error;
       }
     }
 
-    // --- การเปลี่ยนหน้า ---
-    function showPage(pageId) {
-      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active')); // [cite: 41]
-      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active')); // [cite: 41]
-      document.getElementById(pageId).classList.add('active'); // [cite: 41]
-      event.target.classList.add('active'); // [cite: 41]
-      document.getElementById('searchPage1').value = ''; // [cite: 41]
-      document.getElementById('searchPage2').value = ''; // [cite: 42]
-      filterTable('monthlyBody', ''); // [cite: 42]
-      filterTable('dailyBody', ''); // [cite: 42]
-    }
-
-    function filterTable(tbodyId, keyword) {
-      const filter = keyword.toLowerCase(); // [cite: 42]
-      const rows = document.getElementById(tbodyId).getElementsByTagName('tr'); // [cite: 43]
-      for (let i = 0; i < rows.length; i++) { // [cite: 43]
-        if (rows[i].cells.length === 1 && rows[i].cells[0].colSpan > 1) continue; // [cite: 43]
-        let text = rows[i].textContent.toLowerCase(); // [cite: 44]
-        rows[i].style.display = text.includes(filter) ? '' : 'none'; // [cite: 44]
-      } // [cite: 45]
-    }
-
-    // --- ทำงานทันทีเมื่อโหลดหน้าเว็บเสร็จ ---
-    window.onload = async function() {
-      // 1. ตั้งค่าวันที่ปัจจุบัน
-      const today = new Date(); // [cite: 45]
-      const yyyy = today.getFullYear(); // [cite: 46]
-      const mm = String(today.getMonth() + 1).padStart(2, '0'); // [cite: 46]
-      const dd = String(today.getDate()).padStart(2, '0'); // [cite: 46]
-      document.getElementById('dateInput').value = `${yyyy}-${mm}-${dd}`; // [cite: 46]
+    // --- สลับแท็บหน้าเว็บ ---
+    function showPage(pageId, btnElement) {
+      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-pills .nav-link').forEach(el => el.classList.remove('active'));
       
-      // โหลดข้อมูลรายวัน
-      loadDailyData(); // [cite: 47]
+      const targetSection = document.getElementById(pageId);
+      if (targetSection) targetSection.classList.add('active');
+      if (btnElement) btnElement.classList.add('active');
 
-      // 2. ดึงชื่อชีตผ่าน API
+      clearSearch('searchPage1', 'monthlyBody', 'countMonthly');
+      clearSearch('searchPage2', 'dailyBody', 'countDaily');
+    }
+
+    // --- ฟังก์ชันล้างช่องค้นหา ---
+    function clearSearch(inputId, tbodyId, countBadgeId) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.value = '';
+        filterTable(tbodyId, '', countBadgeId);
+      }
+    }
+
+    // --- ระบบกรองข้อมูลในตาราง พร้อมตัวนับผลลัพธ์ ---
+    function filterTable(tbodyId, keyword, countBadgeId) {
+      const filter = keyword.trim().toLowerCase();
+      const tbody = document.getElementById(tbodyId);
+      if (!tbody) return;
+
+      const rows = tbody.getElementsByTagName('tr');
+      let visibleCount = 0;
+      let totalCount = 0;
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        // ข้ามแถวที่เป็นข้อความโหลด/ไม่พบข้อมูล
+        if (row.cells.length === 1 && row.cells[0].colSpan > 1) continue;
+        
+        // ถ้าเป็นแถวหัวข้อกลุ่ม (Section Header) ให้แสดงไว้เสมอเมื่อค้นหา
+        if (row.classList.contains('row-section-header')) {
+          row.style.display = '';
+          continue;
+        }
+
+        totalCount++;
+        const text = row.textContent.toLowerCase();
+        if (filter === '' || text.includes(filter)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      }
+
+      if (countBadgeId) {
+        const badge = document.getElementById(countBadgeId);
+        if (badge) {
+          if (filter === '') {
+            badge.textContent = `ข้อมูลทั้งหมด ${totalCount} แถว`;
+            badge.className = 'badge bg-light text-secondary border';
+          } else {
+            badge.textContent = `พบ ${visibleCount} จาก ${totalCount} แถว`;
+            badge.className = visibleCount > 0 ? 'badge bg-primary-subtle text-primary border border-primary' : 'badge bg-danger-subtle text-danger border border-danger';
+          }
+        }
+      }
+    }
+
+    // --- ปุ่มปรับเปลี่ยนวันแบบเร็ว ---
+    function shiftDate(offsetDays) {
+      const dateInput = document.getElementById('dateInput');
+      const current = dateInput.value ? new Date(dateInput.value) : new Date();
+      current.setDate(current.getDate() + offsetDays);
+      
+      const yyyy = current.getFullYear();
+      const mm = String(current.getMonth() + 1).padStart(2, '0');
+      const dd = String(current.getDate()).padStart(2, '0');
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+      loadDailyData();
+    }
+
+    function setDateToToday() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('dateInput').value = `${yyyy}-${mm}-${dd}`;
+      loadDailyData();
+    }
+
+    // --- โหลดข้อมูลเริ่มต้นเมื่อเปิดหน้าเว็บ ---
+    window.onload = async function() {
+      setDateToToday();
+      await refreshMonthList();
+    };
+
+    async function refreshMonthList() {
+      const select = document.getElementById('monthSelect');
+      select.innerHTML = '<option value="">⏳ กำลังเชื่อมต่อรายการเดือน...</option>';
       try {
         const sheets = await callBackend('getSheetNames');
         populateMonthSelect(sheets);
       } catch (e) {
-        document.getElementById('monthlyBody').innerHTML = '<tr><td class="text-center text-danger py-4">โหลดข้อมูลผิดพลาด</td></tr>';
+        select.innerHTML = '<option value="">❌ ไม่สามารถเชื่อมต่อชีตได้</option>';
+        document.getElementById('monthlyBody').innerHTML = `
+          <tr>
+            <td class="state-container text-danger">
+              <i class="bi bi-exclamation-triangle-fill fs-2 mb-2 d-block"></i>
+              <div class="fw-bold">เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ</div>
+              <small>กรุณากดปุ่มโหลดซ้ำ หรือตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</small><br>
+              <button class="btn btn-sm btn-outline-danger mt-3" onclick="refreshMonthList()"><i class="bi bi-arrow-clockwise"></i> ลองใหม่อีกครั้ง</button>
+            </td>
+          </tr>`;
       }
-    };
+    }
 
     function populateMonthSelect(sheets) {
-      const select = document.getElementById('monthSelect'); // [cite: 48]
-      select.innerHTML = '<option value="">-- กรุณาเลือกเดือน --</option>'; // [cite: 48]
-      const today = new Date(); // [cite: 49]
-      const currentMonth = today.getMonth() + 1; // [cite: 49]
-      const currentYearBuddh = today.getFullYear() + 543; // [cite: 50]
-      const targetSheetName = `${currentMonth}-${currentYearBuddh}`; // [cite: 50]
-      let foundCurrentMonth = false; // [cite: 51]
+      const select = document.getElementById('monthSelect');
+      select.innerHTML = '<option value="">-- กรุณาเลือกเดือน --</option>';
+      
+      const today = new Date();
+      const currentMonth = today.getMonth() + 1;
+      const currentYearBuddh = today.getFullYear() + 543;
+      const targetSheetName = `${currentMonth}-${currentYearBuddh}`;
+      let foundCurrentMonth = false;
 
       sheets.forEach(sheet => {
         let opt = document.createElement('option');
@@ -214,125 +730,238 @@
           opt.selected = true;
           foundCurrentMonth = true;
         }
-        select.appendChild(opt); // [cite: 52]
+        select.appendChild(opt);
       });
 
-      if (foundCurrentMonth) { // [cite: 53]
-        loadMonthlyData(); // [cite: 53]
+      if (foundCurrentMonth) {
+        loadMonthlyData();
+      } else if (sheets.length > 0) {
+        select.selectedIndex = 1;
+        loadMonthlyData();
       } else {
-        document.getElementById('monthlyBody').innerHTML = '<tr><td class="text-center text-muted py-4">กรุณาเลือกเดือนเพื่อดูข้อมูล</td></tr>'; // [cite: 54]
-      } // [cite: 55]
+        document.getElementById('monthlyBody').innerHTML = '<tr><td class="state-container text-muted">ไม่พบข้อมูลชีตประจำเดือน</td></tr>';
+      }
     }
 
-    // --- การดึงข้อมูลรายเดือน ---
+    // --- การดึงข้อมูลตารางเวรประจำเดือน ---
     async function loadMonthlyData() {
-      const sheetName = document.getElementById('monthSelect').value; // [cite: 55]
-      if (!sheetName) return; // [cite: 56]
+      const sheetName = document.getElementById('monthSelect').value;
+      if (!sheetName) return;
+
+      const thead = document.getElementById('monthlyHead');
+      const tbody = document.getElementById('monthlyBody');
+      thead.innerHTML = '';
+      tbody.innerHTML = `
+        <tr>
+          <td class="state-container">
+            <div class="spinner-border spinner-custom mb-3" role="status"></div>
+            <div class="text-secondary fw-semibold">กำลังดึงข้อมูลเวรประจำเดือน...</div>
+          </td>
+        </tr>`;
       
-      document.getElementById('monthlyHead').innerHTML = ''; // [cite: 56]
-      document.getElementById('monthlyBody').innerHTML = '<tr><td class="text-center text-primary py-4">กำลังโหลดข้อมูล...</td></tr>'; // [cite: 56]
-      document.getElementById('searchPage1').value = ''; // [cite: 56]
-      
+      document.getElementById('searchPage1').value = '';
+
       try {
         const data = await callBackend('getMonthlyData', sheetName);
         displayMonthlyData(data);
       } catch (e) {
-        document.getElementById('monthlyBody').innerHTML = '<tr><td class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลด</td></tr>';
+        tbody.innerHTML = `
+          <tr>
+            <td class="state-container text-danger">
+              <i class="bi bi-exclamation-octagon fs-2 mb-2 d-block"></i>
+              <div class="fw-bold">เกิดข้อผิดพลาดในการโหลดตารางเวร</div>
+              <small>${e.message || 'โปรดลองใหม่อีกครั้ง'}</small>
+            </td>
+          </tr>`;
       }
     }
 
     function displayMonthlyData(data) {
-      const thead = document.getElementById('monthlyHead'); // [cite: 57]
-      const tbody = document.getElementById('monthlyBody'); // [cite: 57]
-      thead.innerHTML = ''; tbody.innerHTML = ''; // [cite: 58]
-      
-      if (data.length < 2) {
-        tbody.innerHTML = '<tr><td class="text-center text-danger py-4">ไม่พบข้อมูลในเดือนนี้</td></tr>'; // [cite: 58]
-        return; // [cite: 59]
+      const thead = document.getElementById('monthlyHead');
+      const tbody = document.getElementById('monthlyBody');
+      thead.innerHTML = ''; 
+      tbody.innerHTML = '';
+
+      if (!data || data.length < 2) {
+        tbody.innerHTML = `
+          <tr>
+            <td class="state-container text-muted">
+              <i class="bi bi-calendar-x fs-2 mb-2 d-block text-secondary"></i>
+              <div>ไม่พบข้อมูลเวรในเดือนนี้</div>
+            </td>
+          </tr>`;
+        return;
       }
-      
-      let headerRow1 = document.createElement('tr'); // [cite: 59]
-      data[0].forEach(cell => { // [cite: 60]
+
+      // ดึงวันและเดือนปัจจุบันเพื่อนำมาทำ Highlight Today
+      const todayDate = new Date();
+      const currentDay = todayDate.getDate();
+
+      // Row 1: วันที่ (1, 2, 3...)
+      let headerRow1 = document.createElement('tr');
+      data[0].forEach((cell, idx) => {
         let th = document.createElement('th');
         let text = String(cell).replace(/\^/g, '').trim();
-        th.textContent = text; th.title = text;
+        th.textContent = text;
+        th.title = text;
+
+        if (idx >= 2 && parseInt(text, 10) === currentDay) {
+          th.classList.add('col-today');
+        }
         headerRow1.appendChild(th);
       });
-      thead.appendChild(headerRow1); // [cite: 61]
+      thead.appendChild(headerRow1);
 
+      // Row 2: วันในสัปดาห์ (จ, อ, พ, พฤ, ศ, ส, อา)
       let headerRow2 = document.createElement('tr');
-      data[1].forEach(cell => {
+      const weekendIndices = new Set();
+
+      data[1].forEach((cell, idx) => {
         let th = document.createElement('th');
         let text = String(cell).replace(/\^/g, '').trim();
-        th.textContent = text; th.title = text;
+        th.textContent = text;
+        th.title = text;
+
+        // เช็คเสาร์-อาทิตย์ เพื่อทำไฮไลต์
+        if (idx >= 2) {
+          if (text.includes('ส') || text.includes('อา')) {
+            weekendIndices.add(idx);
+            th.classList.add('col-weekend');
+          }
+          if (parseInt(data[0][idx], 10) === currentDay) {
+            th.classList.add('col-today');
+          }
+        }
         headerRow2.appendChild(th);
       });
-      thead.appendChild(headerRow2); // [cite: 62]
+      thead.appendChild(headerRow2);
 
-      let isGray = false; 
+      // จัดการแถวข้อมูล
+      let isAltGroup = false;
+      let totalDataRows = 0;
+
       for (let i = 2; i < data.length; i++) {
-        let row = data[i]; // [cite: 62]
-        let hasCaret = row.some(cell => String(cell).includes('^')); // [cite: 63]
-        if (hasCaret) isGray = !isGray; // [cite: 63]
-        
-        let tr = document.createElement('tr'); // [cite: 64]
-        tr.style.backgroundColor = isGray ? '#eaeaea' : '#ffffff'; // [cite: 65]
-        if (hasCaret) { tr.style.fontWeight = 'bold'; tr.style.color = '#0d6efd'; } // [cite: 65]
+        let row = data[i];
+        let hasCaret = row.some(cell => String(cell).includes('^'));
+        if (hasCaret) isAltGroup = !isAltGroup;
 
-        row.forEach(cell => {
-          let text = String(cell).replace(/\^/g, '').trim(); 
+        let tr = document.createElement('tr');
+        if (isAltGroup) {
+          tr.classList.add('row-group-alt');
+        }
+
+        // กรณีเป็นแถวหัวข้อแผนก/หน้าที่ (มีเครื่องหมาย ^)
+        if (hasCaret) {
+          tr.classList.add('row-section-header');
+        } else {
+          totalDataRows++;
+        }
+
+        row.forEach((cell, idx) => {
+          let text = String(cell).replace(/\^/g, '').trim();
           let td = document.createElement('td');
-          td.textContent = text; td.title = text; 
+          
+          if (idx >= 2) {
+            if (weekendIndices.has(idx)) td.classList.add('col-weekend');
+            if (parseInt(data[0][idx], 10) === currentDay) td.classList.add('col-today');
+
+            // ใส่ Badge สำหรับตัวย่อเวร
+            if (text !== '') {
+              let badgeSpan = document.createElement('span');
+              badgeSpan.className = 'shift-val';
+              if (text.includes('ด')) badgeSpan.classList.add('shift-d');
+              else if (text.includes('ช')) badgeSpan.classList.add('shift-c');
+              else if (text.includes('บ')) badgeSpan.classList.add('shift-b');
+              else if (text === 'O' || text === 'Off') badgeSpan.classList.add('shift-off');
+              
+              badgeSpan.textContent = text;
+              td.appendChild(badgeSpan);
+            }
+          } else {
+            td.textContent = text;
+          }
+
+          td.title = text;
           tr.appendChild(td);
         });
-        tbody.appendChild(tr); // [cite: 67]
+
+        tbody.appendChild(tr);
       }
+
+      filterTable('monthlyBody', '', 'countMonthly');
     }
 
     // --- การดึงข้อมูลรายวัน ---
     async function loadDailyData() {
-      const dateStr = document.getElementById('dateInput').value; // [cite: 67]
-      if (!dateStr) return; // [cite: 68]
-      
-      document.getElementById('dailyHead').innerHTML = ''; // [cite: 68]
-      document.getElementById('dailyBody').innerHTML = '<tr><td colspan="3" class="text-center text-primary py-4">กำลังอัปเดต Sheet และโหลดข้อมูล...</td></tr>'; // [cite: 68]
-      document.getElementById('searchPage2').value = ''; // [cite: 68]
-      
+      const dateStr = document.getElementById('dateInput').value;
+      if (!dateStr) return;
+
+      const thead = document.getElementById('dailyHead');
+      const tbody = document.getElementById('dailyBody');
+      thead.innerHTML = '';
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="3" class="state-container">
+            <div class="spinner-border spinner-custom mb-3" role="status"></div>
+            <div class="text-secondary fw-semibold">กำลังดึงข้อมูลเวรรายวัน...</div>
+            <small class="text-muted">กำลังอัปเดตข้อมูลวันที่ ${dateStr}</small>
+          </td>
+        </tr>`;
+
+      document.getElementById('searchPage2').value = '';
+
       try {
         const data = await callBackend('updateAndGetDailyData', dateStr);
         displayDailyData(data);
       } catch (e) {
-        document.getElementById('dailyBody').innerHTML = '<tr><td colspan="3" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลด</td></tr>';
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="state-container text-danger">
+              <i class="bi bi-exclamation-circle fs-2 mb-2 d-block"></i>
+              <div class="fw-bold">ไม่สามารถโหลดข้อมูลรายวันได้</div>
+              <small>${e.message || 'โปรดลองใหม่อีกครั้ง'}</small>
+            </td>
+          </tr>`;
       }
     }
 
     function displayDailyData(data) {
-      const thead = document.getElementById('dailyHead'); // [cite: 69]
-      const tbody = document.getElementById('dailyBody'); // [cite: 69]
-      thead.innerHTML = ''; tbody.innerHTML = ''; // [cite: 70]
-      
-      if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-4">ไม่พบข้อมูล</td></tr>'; // [cite: 70]
-        return; // [cite: 71]
+      const thead = document.getElementById('dailyHead');
+      const tbody = document.getElementById('dailyBody');
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="state-container text-muted">
+              <i class="bi bi-calendar-x fs-2 mb-2 d-block text-secondary"></i>
+              <div class="fw-semibold">ไม่พบข้อมูลปฏิบัติงานในวันที่เลือก</div>
+            </td>
+          </tr>`;
+        filterTable('dailyBody', '', 'countDaily');
+        return;
       }
-      
-      let headerRow = document.createElement('tr'); // [cite: 71]
-      data[0].forEach(cell => { // [cite: 72]
+
+      // ส่วนหัวตาราง
+      let headerRow = document.createElement('tr');
+      data[0].forEach(cell => {
         let th = document.createElement('th');
         th.textContent = String(cell).replace(/\^/g, '').trim();
         headerRow.appendChild(th);
       });
-      thead.appendChild(headerRow); // [cite: 73]
-      
-      let isGray = false;
-      for (let i = 1; i < data.length; i++) {
-        let row = data[i]; // [cite: 73]
-        let hasCaret = row.some(cell => String(cell).includes('^')); // [cite: 74]
-        if (hasCaret) isGray = !isGray; // [cite: 74]
+      thead.appendChild(headerRow);
 
-        let tr = document.createElement('tr'); // [cite: 75]
-        tr.style.backgroundColor = isGray ? '#eaeaea' : '#ffffff'; // [cite: 75]
-        if (hasCaret) { tr.style.fontWeight = 'bold'; tr.style.color = '#0d6efd'; } // [cite: 76]
+      // แถวข้อมูล
+      let isAltGroup = false;
+      for (let i = 1; i < data.length; i++) {
+        let row = data[i];
+        let hasCaret = row.some(cell => String(cell).includes('^'));
+        if (hasCaret) isAltGroup = !isAltGroup;
+
+        let tr = document.createElement('tr');
+        if (isAltGroup) tr.classList.add('row-group-alt');
+        if (hasCaret) tr.classList.add('row-section-header');
 
         row.forEach(cell => {
           let text = String(cell).replace(/\^/g, '').trim();
@@ -340,14 +969,12 @@
           td.textContent = text;
           tr.appendChild(td);
         });
-        tbody.appendChild(tr); // [cite: 77]
+
+        tbody.appendChild(tr);
       }
+
+      filterTable('dailyBody', '', 'countDaily');
     }
-  </script>
   </script>
 </body>
 </html>
-
-
-
-
