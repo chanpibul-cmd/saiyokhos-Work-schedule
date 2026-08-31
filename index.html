@@ -299,7 +299,11 @@
     }
     th.col-weekend {
       background-color: #be123c !important;
-      color: #fff !important;
+      color: #ffffff !important;
+    }
+    #monthlyTable thead tr:nth-child(2) th.col-weekend {
+      background-color: #e11d48 !important;
+      color: #ffffff !important;
     }
 
     /* Today Column Highlight */
@@ -308,13 +312,45 @@
       font-weight: 700;
     }
 
+    /* Monthly Notes Column (หมายเหตุ) - Truncate with Ellipsis & Hover */
+    #monthlyTable th.col-note-cell,
+    #monthlyTable td.col-note-cell {
+      width: 150px !important;
+      min-width: 140px !important;
+      max-width: 200px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      text-align: left !important;
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+      cursor: help;
+    }
+    #monthlyTable td.col-note-cell:hover {
+      background-color: #f1f5f9 !important;
+      text-decoration: underline dotted #0284c7;
+    }
+
     /* Hover Rows */
     #monthlyTable tbody tr:hover td {
       background-color: #e2e8f0 !important;
       transition: background-color 0.15s;
     }
 
+    /* Daily Table PC Viewport Wrapper */
+    .daily-wrapper {
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+    }
+
     /* Daily Table Styles */
+    #dailyTable {
+      width: 100%;
+      table-layout: fixed;
+    }
+
     #dailyHead th {
       position: sticky;
       top: 0;
@@ -326,6 +362,22 @@
       font-weight: 600;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       border: none;
+    }
+
+    #dailyTable th:nth-child(1), #dailyTable td:nth-child(1) {
+      width: 48%;
+      text-align: left;
+      padding-left: 1.25rem;
+    }
+
+    #dailyTable th:nth-child(2), #dailyTable td:nth-child(2) {
+      width: 28%;
+      text-align: center;
+    }
+
+    #dailyTable th:nth-child(3), #dailyTable td:nth-child(3) {
+      width: 24%;
+      text-align: center;
     }
 
     #dailyTable td {
@@ -492,45 +544,46 @@
 
     <!-- ==================== หน้าที่ 2: ข้อมูลรายวัน ==================== -->
     <div id="page2" class="page-section table-container">
-      <!-- Controls Toolbar -->
-      <div class="filter-card no-print">
-        <div class="row g-3 align-items-center">
-          <div class="col-lg-4 col-md-6">
-            <label class="form-label small fw-semibold text-muted mb-1">
-              <i class="bi bi-calendar-event me-1 text-primary"></i> เลือกวันที่ต้องการตรวจสอบ:
-            </label>
-            <div class="input-group">
-              <button class="btn btn-outline-secondary" type="button" onclick="shiftDate(-1)" title="วันก่อนหน้า">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-              <input type="date" id="dateInput" class="form-control text-center fw-bold" onchange="loadDailyData()">
-              <button class="btn btn-outline-secondary" type="button" onclick="shiftDate(1)" title="วันถัดไป">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-              <button class="btn btn-primary" type="button" onclick="setDateToToday()" title="ไปที่วันนี้">
-                วันนี้
-              </button>
+      <div class="daily-wrapper">
+        <!-- Controls Toolbar -->
+        <div class="filter-card no-print">
+          <div class="row g-3 align-items-center">
+            <div class="col-lg-5 col-md-6">
+              <label class="form-label small fw-semibold text-muted mb-1">
+                <i class="bi bi-calendar-event me-1 text-primary"></i> เลือกวันที่ต้องการตรวจสอบ:
+              </label>
+              <div class="input-group">
+                <button class="btn btn-outline-secondary" type="button" onclick="shiftDate(-1)" title="วันก่อนหน้า">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+                <input type="date" id="dateInput" class="form-control text-center fw-bold" onchange="loadDailyData()">
+                <button class="btn btn-outline-secondary" type="button" onclick="shiftDate(1)" title="วันถัดไป">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="btn btn-primary" type="button" onclick="setDateToToday()" title="ไปที่วันนี้">
+                  วันนี้
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div class="col-lg-4 col-md-6 ms-auto">
-            <label class="form-label small fw-semibold text-muted mb-1">
-              <i class="bi bi-search me-1 text-primary"></i> กรองผลลัพธ์:
-            </label>
-            <div class="input-group">
-              <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
-              <input type="text" id="searchPage2" class="form-control border-start-0" placeholder="พิมพ์ชื่อ, หน้าที่ หรือเวร..." onkeyup="filterTable('dailyBody', this.value, 'countDaily')">
-              <button class="btn btn-outline-secondary border-start-0" type="button" onclick="clearSearch('searchPage2', 'dailyBody', 'countDaily')" title="ล้างคำค้น">
-                <i class="bi bi-x-circle"></i>
-              </button>
+            <div class="col-lg-5 col-md-6 ms-auto">
+              <label class="form-label small fw-semibold text-muted mb-1">
+                <i class="bi bi-search me-1 text-primary"></i> กรองผลลัพธ์:
+              </label>
+              <div class="input-group">
+                <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" id="searchPage2" class="form-control border-start-0" placeholder="พิมพ์ชื่อ, หน้าที่ หรือเวร..." onkeyup="filterTable('dailyBody', this.value, 'countDaily')">
+                <button class="btn btn-outline-secondary border-start-0" type="button" onclick="clearSearch('searchPage2', 'dailyBody', 'countDaily')" title="ล้างคำค้น">
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div class="col-12 pt-1">
-            <span id="countDaily" class="badge bg-light text-secondary border">แสดงข้อมูลทั้งหมด</span>
+            <div class="col-12 pt-1">
+              <span id="countDaily" class="badge bg-light text-secondary border">แสดงข้อมูลทั้งหมด</span>
+            </div>
           </div>
         </div>
-      </div>
 
       <!-- Table Section -->
       <div class="table-scroll-wrapper">
@@ -545,6 +598,7 @@
             </tr>
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   </main>
@@ -797,7 +851,35 @@
       const todayDate = new Date();
       const currentDay = todayDate.getDate();
 
-      // Row 1: วันที่ (1, 2, 3...)
+      // ค้นหาคอลัมน์หมายเหตุ และ วันหยุด เสาร์-อาทิตย์
+      const weekendIndices = new Set();
+      let noteColIdx = -1;
+
+      // ตรวจสอบทั้ง data[0] และ data[1] เพื่อหาคอลัมน์หมายเหตุ และเสาร์-อาทิตย์
+      data[0].forEach((cell, idx) => {
+        let text0 = String(cell).replace(/\^/g, '').trim();
+        let text1 = data[1] && data[1][idx] ? String(data[1][idx]).replace(/\^/g, '').trim() : '';
+
+        // หาคอลัมน์หมายเหตุ
+        if (text0.includes('หมายเหตุ') || text1.includes('หมายเหตุ')) {
+          noteColIdx = idx;
+        }
+
+        // ตรวจหาวันเสาร์-อาทิตย์ จากข้อความ 'ส' หรือ 'อา' (ยกเว้นหมายเหตุ)
+        if (idx >= 2 && !text0.includes('หมายเหตุ') && !text1.includes('หมายเหตุ')) {
+          if (text0 === 'ส' || text0 === 'อา' || text0.includes('ส') || text0.includes('อา') ||
+              text1 === 'ส' || text1 === 'อา' || text1.includes('ส') || text1.includes('อา')) {
+            weekendIndices.add(idx);
+          }
+        }
+      });
+
+      // ถ้าไม่พบคอลัมน์หมายเหตุ และแถวมีมากกว่า 33 คอลัมน์ ให้ใช้คอลัมน์สุดท้าย
+      if (noteColIdx === -1 && data[0].length >= 34) {
+        noteColIdx = data[0].length - 1;
+      }
+
+      // Row 1: วันที่ หรือ วันในสัปดาห์ (ตามโครงสร้าง Sheet)
       let headerRow1 = document.createElement('tr');
       data[0].forEach((cell, idx) => {
         let th = document.createElement('th');
@@ -805,31 +887,38 @@
         th.textContent = text;
         th.title = text;
 
-        if (idx >= 2 && parseInt(text, 10) === currentDay) {
-          th.classList.add('col-today');
+        if (idx >= 2) {
+          if (weekendIndices.has(idx)) {
+            th.classList.add('col-weekend');
+          }
+          if (parseInt(text, 10) === currentDay) {
+            th.classList.add('col-today');
+          }
+          if (idx === noteColIdx || text.includes('หมายเหตุ')) {
+            th.classList.add('col-note-cell');
+          }
         }
         headerRow1.appendChild(th);
       });
       thead.appendChild(headerRow1);
 
-      // Row 2: วันในสัปดาห์ (จ, อ, พ, พฤ, ศ, ส, อา)
+      // Row 2: วันในสัปดาห์ หรือ วันที่
       let headerRow2 = document.createElement('tr');
-      const weekendIndices = new Set();
-
       data[1].forEach((cell, idx) => {
         let th = document.createElement('th');
         let text = String(cell).replace(/\^/g, '').trim();
         th.textContent = text;
         th.title = text;
 
-        // เช็คเสาร์-อาทิตย์ เพื่อทำไฮไลต์
         if (idx >= 2) {
-          if (text.includes('ส') || text.includes('อา')) {
-            weekendIndices.add(idx);
+          if (weekendIndices.has(idx)) {
             th.classList.add('col-weekend');
           }
-          if (parseInt(data[0][idx], 10) === currentDay) {
+          if (parseInt(text, 10) === currentDay || parseInt(data[0][idx], 10) === currentDay) {
             th.classList.add('col-today');
+          }
+          if (idx === noteColIdx) {
+            th.classList.add('col-note-cell');
           }
         }
         headerRow2.appendChild(th);
@@ -863,10 +952,16 @@
           
           if (idx >= 2) {
             if (weekendIndices.has(idx)) td.classList.add('col-weekend');
-            if (parseInt(data[0][idx], 10) === currentDay) td.classList.add('col-today');
+            if (parseInt(data[0][idx], 10) === currentDay || (data[1] && parseInt(data[1][idx], 10) === currentDay)) {
+              td.classList.add('col-today');
+            }
 
-            // ใส่ Badge สำหรับตัวย่อเวร
-            if (text !== '') {
+            // คอลัมน์หมายเหตุ: ซ่อนส่วนเกินเมื่อยาว และแสดงเต็มเมื่อ Hover
+            if (idx === noteColIdx) {
+              td.classList.add('col-note-cell');
+              td.textContent = text;
+            } else if (text !== '') {
+              // ใส่ Badge สำหรับตัวย่อเวร
               let badgeSpan = document.createElement('span');
               badgeSpan.className = 'shift-val';
               if (text.includes('ด')) badgeSpan.classList.add('shift-d');
@@ -881,7 +976,10 @@
             td.textContent = text;
           }
 
-          td.title = text;
+          // แสดง Tooltip เนื้อหาเต็มเมื่อนำเมาส์ไปชี้
+          if (text) {
+            td.title = text;
+          }
           tr.appendChild(td);
         });
 
@@ -978,3 +1076,4 @@
   </script>
 </body>
 </html>
+
